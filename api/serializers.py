@@ -1,7 +1,7 @@
 from django.forms import ValidationError
 from rest_framework import serializers
 from .models import Post, Comment, Tag, Like
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, password_validation, authenticate
 
 UserModel = get_user_model()
 
@@ -18,15 +18,22 @@ class PersonaRegisterSerializer(serializers.ModelSerializer):
         return db_instance
 
 class PersonaLoginSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=12, read_only=True)
-    password = serializers.CharField(max_length=100, min_length=8, style={'input_type':'password'})
-    token = serializers.CharField(max_length=255, read_only=True)
-        
 
-class PersonaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserModel
-        fields = ('name', 'email', 'rut')
+
+    rut = serializers.CharField(max_length=12, read_only=True)
+    password = serializers.CharField(max_length=100, min_length=8, style={'input_type':'password'})
+
+    def validate(self, data):
+        user = authenticate(username=data['rut'], password=data['password'])
+        if not user:
+            raise serializers.ValidationError('Las credenciales no son correctas.')
+        self.context['user'] = user
+        return data
+        
+    def create(self, data):
+
+        token, created = token.objects.get_or_create(user=self.context['user'])
+        return self.context['user'], token.key      
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:

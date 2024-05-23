@@ -4,25 +4,33 @@ from django.contrib.auth.models import AbstractBaseUser , PermissionsMixin
 
 # Create your models here.
 class PersonaManager(BaseUserManager):
-    def create_user(self, rut, password=None):
+    def create_user(self, name, rut, email, password=None):
         if not rut:
             raise ValueError("El RUT es obligatorio.")
         if not password:
             raise ValueError("La contraseña es obligatoria.")
-        persona = self.model(rut=rut)
+        email = self.normalize_email(email)
+        persona = self.model(name=name, rut=rut, email=email)
         persona.set_password(password)
         persona.save()
         return persona
-    def create_superuser(self, rut, password=None):
+    def create_superuser(self, name, rut, email, password=None):
         if not rut:
             raise ValueError("El RUT es obligatorio.")
         if not password:
             raise ValueError("La contraseña es obligatoria.")
-        user = self.create_user(rut,password)
+        user = self.create_user(name, rut, email, password)
         user.is_superuser= True
         user.is_staff=True
         user.save()
         return user
+    
+class Award(models.Model):
+    name = models.CharField(max_length = 255)
+    description = models.CharField(max_length = 500)
+
+    def __str__(self):
+        return self.name
         
 
 class Persona(AbstractBaseUser, PermissionsMixin):
@@ -30,6 +38,9 @@ class Persona(AbstractBaseUser, PermissionsMixin):
     rut = models.CharField(max_length=12, unique=True)
     email = models.EmailField(max_length=254, unique=True)
     date_joined = models.DateField(auto_now_add=True)
+    exp = models.PositiveIntegerField(default = 0)
+    level = models.PositiveIntegerField(default = 1)
+    awards = models.ManyToManyField(Award)
 
     is_active = models.BooleanField(default=True)
     is_staff = False
@@ -71,5 +82,7 @@ class Comment(models.Model):
 class Like(models.Model):
     comment = models.ForeignKey(Comment, on_delete = models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
+
+
 
 

@@ -10,7 +10,7 @@ from django.contrib.auth import authenticate
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from .utils import generate_access_token
-from .serializers import PersonaRegisterSerializer, PersonaLoginSerializer, PersonaSerializer, PostSerializer, CommentSerializer, LikeSerializer, TagSerializer
+from .serializers import PersonaRegisterSerializer, PersonaLoginSerializer, PostSerializer, CommentSerializer, LikeSerializer, TagSerializer
 from .models import Persona, Post, Comment, Like, Tag
 import jwt
 # Create your views here.
@@ -70,7 +70,7 @@ class PersonaLoginAPIView(APIView):
 			'message': 'Algo salio mal.'
 		})
 	
-class PersonaViewAPI(APIView):
+class PersonaAPIView(APIView):
 	authentication_classes = (TokenAuthentication,)
 	permission_classes = (AllowAny,)
 
@@ -87,7 +87,7 @@ class PersonaViewAPI(APIView):
 		user_serializer = PersonaRegisterSerializer(user)
 		return Response(user_serializer.data)
 
-class PersonaLogoutViewAPI(APIView):
+class PersonaLogoutAPIView(APIView):
 	authentication_classes = (TokenAuthentication,)
 	permission_classes = (AllowAny,)
 
@@ -106,9 +106,6 @@ class PersonaLogoutViewAPI(APIView):
 		}
 		return response    
 
-class PersonaView(viewsets.ModelViewSet):
-    serializer_class = PersonaSerializer
-    queryset = Persona.objects.all() 
 
 class PostView(viewsets.ModelViewSet):
     serializer_class = PostSerializer
