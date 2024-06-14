@@ -1,60 +1,56 @@
-from django.forms import ValidationError
 from rest_framework import serializers
-from .models import Post, Comment, Tag, Like
-from django.contrib.auth import get_user_model, password_validation, authenticate
+from .models import Post, Comment, Tag, Persona, LikeComments, LikePosts
 
-UserModel = get_user_model()
 
-class PersonaRegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(max_length=100, min_length=8, style={'input_type': 'password'})
+class PersonaSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserModel
-        fields = ['name', 'rut', 'email', 'password']
+        model = Persona
+        fields = ['username', 'rut', 'email', 'password', 'image']
+        extra_kwargs = {"password": {"write_only":True}}
     def create(self, validated_data):
-        user_password = validated_data.get('password', None)
-        db_instance = self.Meta.model(rut=validated_data.get('rut'), name=validated_data.get('name'), email=validated_data.get('email'))
-        db_instance.set_password(user_password)
-        db_instance.save()
-        return db_instance
-
-class PersonaLoginSerializer(serializers.Serializer):
-
-
-    rut = serializers.CharField(max_length=12, read_only=True)
-    password = serializers.CharField(max_length=100, min_length=8, style={'input_type':'password'})
-
-    def validate(self, data):
-        user = authenticate(username=data['rut'], password=data['password'])
-        if not user:
-            raise serializers.ValidationError('Las credenciales no son correctas.')
-        self.context['user'] = user
-        return data
-        
-    def create(self, data):
-
-        token, created = token.objects.get_or_create(user=self.context['user'])
-        return self.context['user'], token.key      
+        user = Persona.objects.create_user(**validated_data)
+        return user
+     
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        ## fields = {'id', 'title', 'content', 'author', 'tags', 'created_at'}
-        fields = '__all__'
+        fields = ('id', 'title', 'content', 'author', 'image', 'tags', 'created_at', 'likes','slug')
+        extra_kwargs = {"author": {"read_only":True}}
+
+class PostListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ('id', 'title', 'content', 'author', 'image', 'tags', 'created_at', 'likes','slug')
+        extra_kwargs = {"author": {"read_only":True}}
+
 
 class TagSerializer(serializers.ModelSerializer):
+    posts = serializers.PrimaryKeyRelatedField(many=True, queryset=Post.postobjects.all())  # Agrega este campo
+
     class Meta:
         model = Tag
-        ## fields = {'id','name'}
-        fields = '__all__'
+        fields = ('id', 'name', 'slug', 'posts')
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        ## field = {'id', 'content', 'author', 'post', 'created_at'}
-        fields = '__all__'
+        fields = ('id', 'content', 'author', 'image', 'post', 'created_at', 'likes')
+        extra_kwargs = {"author": {"read_only":True}, "post": {"read_only":True}}
 
-class LikeSerializer(serializers.ModelSerializer):
+class CommentListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Like
-        ## fields = {'id', 'comment', 'post'}
-        fields = '__all__'
+        model = Comment
+        fields = ('id', 'content', 'author', 'image', 'post', 'created_at', 'likes')
+        extra_kwargs = {"author": {"read_only":True}, "post": {"read_only":True}}
+
+class LikePostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LikePosts
+        fields = ('id','author','post')
+
+class LikeCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LikeComments
+        fields = ('id','author','comment')
+

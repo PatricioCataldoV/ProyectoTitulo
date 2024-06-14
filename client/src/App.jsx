@@ -1,16 +1,23 @@
-import {BrowserRouter, Routes, Route, Navigate} from "react-router-dom";
-import {Home} from "./pages/Home";
-import {Login} from "./pages/Login";
+import React from 'react'
+import store from "./store"
+import { Provider } from 'react-redux'
+import { BrowserRouter, Route, Routes ,  } from 'react-router-dom'
+import Rutas from './Routes'
 
 
-function App(){
+
+function App() {
+
+
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route exact path="/" element={< Home />} />
-        <Route path="/user/login/" element={<Login />} />
-      </Routes>
-    </BrowserRouter>
+    <Provider store={store}>
+      <BrowserRouter>
+        <Rutas/>
+      </BrowserRouter>
+    </Provider> 
+
   )
 }
+
 export default App

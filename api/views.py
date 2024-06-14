@@ -1,124 +1,246 @@
 from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import generics, status, permissions
 from rest_framework.views import APIView
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.exceptions import AuthenticationFailed
-from django.contrib.auth import authenticate
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from .utils import generate_access_token
-from .serializers import PersonaRegisterSerializer, PersonaLoginSerializer, PostSerializer, CommentSerializer, LikeSerializer, TagSerializer
-from .models import Persona, Post, Comment, Like, Tag
-import jwt
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from .pagination import SmallSetPagination
+from .permissions import IsPostAuthorOrReadOnly
+from django.db.models.query_utils import Q
+from .serializers import PersonaSerializer, PostSerializer, PostListSerializer,CommentListSerializer
+from .models import Persona, Post, Comment, Tag, LikeComments, LikePosts
+
 # Create your views here.
 
+class CreatePostView(APIView):
+    permission_classes = (AllowAny,)
+    def post(self, request, format=None):
+        user = self.request.user
+        Post.objects.create(author=user)
 
-class PersonaRegisterAPIView(APIView):
-	serializer_class = PersonaRegisterSerializer
-	authentication_classes = (TokenAuthentication,)
-	permission_classes = (AllowAny,)
+        return Response({'success': 'Post edited'})
+
+class PostListView(APIView):
+    permission_classes = (AllowAny,)
+    def get(self, request, format=None):
+        if Post.postobjects.all().exists():
+
+            posts = Post.postobjects.all()
+
+            paginator = SmallSetPagination()
+            results = paginator.paginate_queryset(posts, request)
+            serializer = PostListSerializer(results, many=True)
+
+            return paginator.get_paginated_response({'posts': serializer.data})
+        else:
+            return Response({'error':'No posts found'}, status=status.HTTP_404_NOT_FOUND)
+        
+class ListTagView(APIView):
+    permission_classes = (AllowAny,)
+    def get(self, request, format=None):
+        if Tag.objects.all().exists():
+            tags = Tag.objects.all()
+
+            result = []
+            for tag in tags:
+                item = {}
+
+                item['id']=tag.id
+                item['name']=tag.name
+                item['slug']=tag.slug
+
+                result.append(item)
+
+            return Response({'tags': result}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'No tags found'}, status=status.HTTP_404_NOT_FOUND)
+
+class ListPostsByTagView(APIView):
+    permission_classes = (AllowAny,)
+    def get(self, request, slug, format=None):
+        tag = Tag.objects.get(slug=slug)
+        if tag:
+            posts = Post.postobjects.filter(tags=tag).all()
+            if posts:
+                posts = posts.order_by('-created_at').all()   
+                paginator = SmallSetPagination()
+                results = paginator.paginate_queryset(posts, request)
+                serializer = PostListSerializer(results, many=True)
+
+                return paginator.get_paginated_response({'posts': serializer.data})
+            else:
+                return Response({'error':'No posts found'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({'error':'No tags found'}, status=status.HTTP_404_NOT_FOUND)
+        
+class PersonaProfileView(APIView):
+    permission_classes = (IsAuthenticated,)
+    def get_queryset(self):
+        persona = Persona.objects.filter(user=self.request.user)
+        serializer = PersonaSerializer(persona)
+
+        if persona:
+            serializer = PersonaSerializer(persona)
+            return Response({'user': serializer.data})
+        else:
+            return Response({'error': 'Perfil de usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+        
+class PostDetailView(APIView):
+    permission_classes = (AllowAny,)
+    def get(self, request, slug, format=None):
+        if Post.postobjects.filter(slug=slug).exists():
+            
+            post = Post.postobjects.get(slug=slug)
+            serializer = PostSerializer(post)
+
+            return Response({'post':serializer.data})
+        else:
+            return Response({'error':'Post doesnt exist'}, status=status.HTTP_404_NOT_FOUND)
+
+class DeletePostView(APIView):
+    permission_classes = (IsPostAuthorOrReadOnly,)
+    def delete(self, request, slug, format=None):
+        
+        post = Post.objects.get(slug=slug)
+
+        post.delete()
+
+        return Response({'success': 'Post deleted'})
     
-	def get(self, request):
-		content = { 'message': 'Hello!' }
-		return Response(content)
+class SearchPostView(APIView):
+    permission_classes = (AllowAny,)
+    def get(self,request, format=None):
+        search_term = request.query_params.get('s')
+        matches = Post.postobjects.filter(
+            Q(title__icontains=search_term) |
+            Q(content__icontains=search_term)
+        )
 
-	def post(self, request):
-		serializer = self.serializer_class(data=request.data)
-		if serializer.is_valid(raise_exception=True):
-			new_user = serializer.save()
-			if new_user:
-				access_token = generate_access_token(new_user)
-				data = { 'access_token': access_token }
-				response = Response(data, status=status.HTTP_201_CREATED)
-				response.set_cookie(key='access_token', value=access_token, httponly=True)
-				return response
-		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-      
-class PersonaLoginAPIView(APIView):
-	serializer_class = PersonaLoginSerializer
-	authentication_classes = (TokenAuthentication,)
-	permission_classes = (AllowAny,)
-	
-	def post(self, request):
-		rut = request.data.get('rut', None)
-		user_password = request.data.get('password', None)
+        paginator = SmallSetPagination()
+        results = paginator.paginate_queryset(matches, request)
 
-		if not user_password:
-			raise AuthenticationFailed('La contraseña es obligatoria.')
+        serializer = PostListSerializer(results, many=True)
+        return paginator.get_paginated_response({'filtered_posts': serializer.data})
+    
+class AuthorListView(APIView):
+    permission_classes = (IsAuthenticated,)
+    def get(self, request, format=None):
 
-		if not rut:
-			raise AuthenticationFailed('El rut es Obligatorio.')
+        user = self.request.user
 
-		user_instance = authenticate(username=rut, password=user_password)
+        if Post.objects.filter(author=user).exists():
 
-		if not user_instance:
-			raise AuthenticationFailed('Usuario no encontrado.')
+            posts = Post.objects.filter(author=user)
 
-		if user_instance.is_active:
-			user_access_token = generate_access_token(user_instance)
-			response = Response()
-			response.set_cookie(key='access_token', value=user_access_token, httponly=True)
-			response.data = {
-				'access_token': user_access_token
-			}
-			return response
+            paginator = SmallSetPagination()
+            results = paginator.paginate_queryset(posts, request)
+            serializer = PostListSerializer(results, many=True)
 
-		return Response({
-			'message': 'Algo salio mal.'
-		})
-	
-class PersonaAPIView(APIView):
-	authentication_classes = (TokenAuthentication,)
-	permission_classes = (AllowAny,)
+            return paginator.get_paginated_response({'posts': serializer.data})
+        else:
+            return Response({'error':'No posts found'}, status=status.HTTP_404_NOT_FOUND)
+        
 
-	def get(self, request):
-		user_token = request.COOKIES.get('access_token')
+class DraftPostView(APIView):
+    permission_classes = (IsPostAuthorOrReadOnly,)
+    def put(self, request, format=None):
+        data = self.request.data
+        slug = data['slug']
 
-		if not user_token:
-			raise AuthenticationFailed('Usuario no autentificado.')
+        post = Post.objects.get(slug=slug)
 
-		payload = jwt.decode(user_token, settings.SECRET_KEY, algorithms=['HS256'])
+        post.status = 'draft'
+        post.save()
 
-		user_model = get_user_model()
-		user = user_model.objects.filter(id=payload['id']).first()
-		user_serializer = PersonaRegisterSerializer(user)
-		return Response(user_serializer.data)
-
-class PersonaLogoutAPIView(APIView):
-	authentication_classes = (TokenAuthentication,)
-	permission_classes = (AllowAny,)
-
-	def get(self, request):
-		user_token = request.COOKIES.get('access_token', None)
-		if user_token:
-			response = Response()
-			response.delete_cookie('access_token')
-			response.data = {
-				'message': 'Salida de sesión exitosa.'
-			}
-			return response
-		response = Response()
-		response.data = {
-			'message': 'El usuario ya ha cerrado sesión.'
-		}
-		return response    
+        return Response({'success': 'Post edited'})
 
 
-class PostView(viewsets.ModelViewSet):
-    serializer_class = PostSerializer
-    queryset = Post.objects.all() 
+class PublishPostView(APIView):
+    permission_classes = (IsPostAuthorOrReadOnly,)
+    def put(self, request, format=None):
+        data = self.request.data
+        slug = data['slug']
 
-class CommentView(viewsets.ModelViewSet):
-    serializer_class = CommentSerializer
-    queryset = Comment.objects.all() 
+        post = Post.objects.get(slug=slug)
 
-class LikeView(viewsets.ModelViewSet):
-    serializer_class = LikeSerializer
-    queryset = Like.objects.all() 
+        post.status = 'published'
+        post.save()
 
-class TagView(viewsets.ModelViewSet):
-    serializer_class = TagSerializer
-    queryset = Tag.objects.all() 
+        return Response({'success': 'Post edited'})
+
+class ListCommentsByPostView(APIView):
+    permission_classes = (AllowAny,)
+    def get(self, request, slug, format=None):
+        if Comment.objects.all().exists():
+            post = Post.postobjects.get(slug=slug)
+            comments = Comment.objects.order_by('-created_at').all()
+            comments = comments.filter(post=post)      
+            paginator = SmallSetPagination()
+            results = paginator.paginate_queryset(comments, request)
+            serializer = CommentListSerializer(results, many=True)
+
+            return paginator.get_paginated_response({'comments': serializer.data})
+        else:
+            return Response({'error':'No comments found'}, status=status.HTTP_404_NOT_FOUND)
+
+class CreateCommentView(APIView):
+    permission_classes = (AllowAny,)
+    def post(self, request, format=None):
+        user = self.request.user
+        Comment.objects.create(author=user)
+
+        return Response({'success': 'Comment published'})
+    
+class DeleteCommentView(APIView):
+    permission_classes = (IsPostAuthorOrReadOnly,)
+    def delete(self, request, slug, format=None):
+        
+        comment = Comment.objects.get(slug=slug)
+
+        comment.delete()
+
+        return Response({'success': 'Comment deleted'})
+
+class CreatePersonaView(generics.CreateAPIView):
+    queryset = Persona.objects.all()
+    serializer_class = PersonaSerializer
+    permission_classes = [AllowAny]
+
+        
+class LikePostCreateView(APIView):
+    permission_classes = (AllowAny,)
+    def post(self, request, slug, format=None):
+        if Post.objects.filter(slug=slug).exists():
+            user = self.request.user
+            post = Post.objects.get(slug=slug)
+            like, created = LikePosts.objects.get_or_create(author=user, post=post)
+            if created:
+                post.likes += 1
+                post.save()
+                return Response({'success': 'Like created'})
+            else:
+                like.delete()
+                post.likes -= 1
+                post.save()
+                return Response({'success': 'Like removed'})
+        else:
+            return Response({'error':'Post doesnt exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+class LikeCommentCreateView(APIView):
+    permission_classes = (AllowAny,)
+    def post(self, request, slug, format=None):
+        if Post.objects.filter(slug=slug).exists():
+            comment = Comment.objects.get(slug=slug)
+            user = self.request.user
+            like, created = LikeComments.objects.get_or_create(author=user, comment=comment)
+            if created:
+                comment.likes += 1
+                comment.save()
+                return Response({'success': 'Like created'})
+            else:
+                like.delete()  # Elimina el "me gusta" existente
+                comment.likes -= 1
+                comment.save()
+                return Response({'success': 'Like removed'})
+        else:
+            return Response({'error': 'Comment does not exist'}, status=status.HTTP_404_NOT_FOUND)
