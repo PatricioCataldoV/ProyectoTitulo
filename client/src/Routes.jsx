@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom'
 import PrivateRoute from "./components/PrivateRoute"
 import Login from "./pages/Login"
 import Home from "./pages/Home"

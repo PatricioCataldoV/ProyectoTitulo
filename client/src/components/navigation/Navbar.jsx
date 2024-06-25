@@ -17,7 +17,7 @@ function Navbar(){
     };
 
     return(
-        <nav className="w-full bg-gray-500 py-7 shadow-md fixed">
+        <nav className="w-full bg-gray-400 py-7 shadow-md fixed" style={{ position: 'fixed', zIndex: 1 }}>
             <div className="px-4 sm:px-6">
                 <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
                     <div className="ml-4 mt-2">
