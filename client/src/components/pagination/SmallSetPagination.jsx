@@ -44,7 +44,7 @@ function SmallSetPagination({list_page, list, count}){
             if (active === page) {
                 content = (
                     <div key={i} className={`hidden md:-mt-px md:flex`}>
-                        <div className="border-gray-700 text-gray-700 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium">
+                        <div className="border-gray-400 text-gray-300 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium">
                         {pageNumber}
                         </div>
                     </div>

@@ -5,7 +5,7 @@ from .models import Post, Comment, Tag, Persona, LikeComments, LikePosts
 class PersonaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Persona
-        fields = ['username', 'rut', 'email', 'password', 'image']
+        fields = ['username', 'rut', 'email', 'password', 'image', 'exp', 'level', 'date_joined']
         extra_kwargs = {"password": {"write_only":True}}
     def create(self, validated_data):
         user = Persona.objects.create_user(**validated_data)
@@ -35,13 +35,13 @@ class TagSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ('id', 'content', 'author', 'image', 'post', 'created_at', 'likes')
+        fields = ('id', 'content', 'author', 'slug', 'image', 'post', 'created_at', 'likes')
         extra_kwargs = {"author": {"read_only":True}, "post": {"read_only":True}}
 
 class CommentListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ('id', 'content', 'author', 'image', 'post', 'created_at', 'likes')
+        fields = ('id', 'content', 'author', 'slug','image', 'post', 'created_at', 'likes')
         extra_kwargs = {"author": {"read_only":True}, "post": {"read_only":True}}
 
 class LikePostSerializer(serializers.ModelSerializer):

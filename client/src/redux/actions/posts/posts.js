@@ -9,8 +9,8 @@ import {
     GET_SEARCH_POST_SUCCESS,
     GET_POST_LIST_TAG_FAIL,
     GET_POST_LIST_TAG_SUCCESS,
-} from './types'
-import api from '../../api'
+} from './types';
+import api from '../../api';
 
 export const get_author_post_list = () => async dispatch => {
     const config = {

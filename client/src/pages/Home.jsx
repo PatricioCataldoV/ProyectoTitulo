@@ -1,15 +1,14 @@
 import { connect } from "react-redux"
 import Layout from "../components/navigation/Layout"
 import Navbar from "../components/navigation/Navbar"
-import tags from "../redux/reducers/tags"
 import { useEffect } from "react"
 import { get_tags } from "../redux/actions/tags/tags"
-import posts from "../redux/reducers/posts"
 import {
     get_post_list,
     get_post_list_page
 } from "../redux/actions/posts/posts"
 import PostList from "../components/posts/PostList"
+
 
 
 

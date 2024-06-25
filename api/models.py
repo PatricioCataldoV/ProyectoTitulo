@@ -2,6 +2,7 @@ from django.db import models
 from django.urls import reverse
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.core.validators import MaxValueValidator
 
 # Create your models here.
 class PersonaManager(BaseUserManager):
@@ -18,13 +19,6 @@ class PersonaManager(BaseUserManager):
         user.is_staff = True
         user.save()
         return user
-    
-class Award(models.Model):
-    name = models.CharField(max_length = 255)
-    description = models.CharField(max_length = 500)
-
-    def __str__(self):
-        return self.name
         
 
 class Persona(AbstractBaseUser, PermissionsMixin):
@@ -32,9 +26,8 @@ class Persona(AbstractBaseUser, PermissionsMixin):
     rut = models.CharField(max_length=12, unique=True)
     email = models.EmailField(max_length=254, unique=True)
     date_joined = models.DateField(auto_now_add=True)
-    exp = models.PositiveIntegerField(default = 0)
+    exp = models.PositiveIntegerField(default=0, validators=[MaxValueValidator(100)])
     level = models.PositiveIntegerField(default = 1)
-    awards = models.ManyToManyField(Award)
     image= models.ImageField(verbose_name="Imagen", upload_to="imgsProfile", default="profile_default.jpg")
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
@@ -43,11 +36,11 @@ class Persona(AbstractBaseUser, PermissionsMixin):
 
     objects = PersonaManager()
 
-    USERNAME_FIELD = 'rut'
-    REQUIRED_FIELDS = ['username', 'email']
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'rut']
 
     def __str__(self):
-        return self.rut
+        return self.email
     
 
 
@@ -69,8 +62,8 @@ class Post(models.Model):
         ('published', 'Published'),
     )
 
-    title = models.CharField(max_length = 100)
-    content = models.CharField(max_length = 600)
+    title = models.CharField(max_length = 255)
+    content = models.CharField(max_length = 1000)
     author = models.ForeignKey(Persona, on_delete = models.CASCADE, related_name= "Posts")
     slug = models.SlugField(max_length=100, unique=True)
     tags = models.ManyToManyField(Tag, blank=True)

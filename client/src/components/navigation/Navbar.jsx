@@ -17,8 +17,8 @@ function Navbar(){
     };
 
     return(
-        <nav className="w-full py-10 shadow-md fixed">
-            <div className="bg-white px-4 sm:px-6">
+        <nav className="w-full bg-gray-500 py-7 shadow-md fixed">
+            <div className="px-4 sm:px-6">
                 <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
                     <div className="ml-4 mt-2">
                         <Link to="/" className="text-lg font-medium leading-6 text-gray-900">Inicio</Link>
@@ -46,6 +46,7 @@ function Navbar(){
                                     placeholder-gray-600 focus:placeholder-gray-500
                                 `}
                             />
+                            
                         </form>
                     </div>
                     <div className="ml-4 mt-2 mr-4">

@@ -1,5 +1,5 @@
 import {
-    GET_COMMENT_LIST_POST_FAIL ,
+    GET_COMMENT_LIST_POST_FAIL,
     GET_COMMENT_LIST_POST_SUCCESS,
 } from "../actions/comments/types";
 

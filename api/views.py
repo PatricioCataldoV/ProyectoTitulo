@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework import generics, status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -12,15 +12,15 @@ from .models import Persona, Post, Comment, Tag, LikeComments, LikePosts
 # Create your views here.
 
 class CreatePostView(APIView):
-    permission_classes = (AllowAny,)
+    permission_classes = [IsAuthenticated]
     def post(self, request, format=None):
         user = self.request.user
-        Post.objects.create(author=user)
+        Post.postobjects.create(author=user)
 
-        return Response({'success': 'Post edited'})
+        return Response({'success': 'Post created'})
 
 class PostListView(APIView):
-    permission_classes = (AllowAny,)
+    permission_classes = [IsAuthenticated]
     def get(self, request, format=None):
         if Post.postobjects.all().exists():
 
@@ -55,7 +55,7 @@ class ListTagView(APIView):
             return Response({'error': 'No tags found'}, status=status.HTTP_404_NOT_FOUND)
 
 class ListPostsByTagView(APIView):
-    permission_classes = (AllowAny,)
+    permission_classes = [IsAuthenticated]
     def get(self, request, slug, format=None):
         tag = Tag.objects.get(slug=slug)
         if tag:
@@ -72,21 +72,17 @@ class ListPostsByTagView(APIView):
         else:
             return Response({'error':'No tags found'}, status=status.HTTP_404_NOT_FOUND)
         
-class PersonaProfileView(APIView):
-    permission_classes = (IsAuthenticated,)
-    def get_queryset(self):
-        persona = Persona.objects.filter(user=self.request.user)
-        serializer = PersonaSerializer(persona)
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
 
-        if persona:
-            serializer = PersonaSerializer(persona)
-            return Response({'user': serializer.data})
-        else:
-            return Response({'error': 'Perfil de usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+    def get(self, request):
+        user_profile = get_object_or_404(Persona, email=request.user.email)
+        serializer = PersonaSerializer(user_profile)
+        return Response(serializer.data)
 
         
 class PostDetailView(APIView):
-    permission_classes = (AllowAny,)
+    permission_classes = [IsAuthenticated]
     def get(self, request, slug, format=None):
         if Post.postobjects.filter(slug=slug).exists():
             
@@ -108,7 +104,7 @@ class DeletePostView(APIView):
         return Response({'success': 'Post deleted'})
     
 class SearchPostView(APIView):
-    permission_classes = (AllowAny,)
+    permission_classes = [IsAuthenticated]
     def get(self,request, format=None):
         search_term = request.query_params.get('s')
         matches = Post.postobjects.filter(
@@ -169,7 +165,7 @@ class PublishPostView(APIView):
         return Response({'success': 'Post edited'})
 
 class ListCommentsByPostView(APIView):
-    permission_classes = (AllowAny,)
+    permission_classes = [IsAuthenticated]
     def get(self, request, slug, format=None):
         if Comment.objects.all().exists():
             post = Post.postobjects.get(slug=slug)
@@ -184,7 +180,7 @@ class ListCommentsByPostView(APIView):
             return Response({'error':'No comments found'}, status=status.HTTP_404_NOT_FOUND)
 
 class CreateCommentView(APIView):
-    permission_classes = (AllowAny,)
+    permission_classes = [IsAuthenticated]
     def post(self, request, format=None):
         user = self.request.user
         Comment.objects.create(author=user)
@@ -208,7 +204,7 @@ class CreatePersonaView(generics.CreateAPIView):
 
         
 class LikePostCreateView(APIView):
-    permission_classes = (AllowAny,)
+    permission_classes = [IsAuthenticated]
     def post(self, request, slug, format=None):
         if Post.objects.filter(slug=slug).exists():
             user = self.request.user
@@ -227,7 +223,7 @@ class LikePostCreateView(APIView):
             return Response({'error':'Post doesnt exist'}, status=status.HTTP_404_NOT_FOUND)
         
 class LikeCommentCreateView(APIView):
-    permission_classes = (AllowAny,)
+    permission_classes = [IsAuthenticated]
     def post(self, request, slug, format=None):
         if Post.objects.filter(slug=slug).exists():
             comment = Comment.objects.get(slug=slug)
