@@ -15,33 +15,33 @@ class PersonaSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ('id', 'title', 'content', 'author', 'image', 'tags', 'created_at', 'likes','slug')
+        fields = ('id', 'title', 'content', 'author', 'image', 'tags', 'created_at', 'likes')
         extra_kwargs = {"author": {"read_only":True}}
 
 class PostListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ('id', 'title', 'content', 'author', 'image', 'tags', 'created_at', 'likes','slug')
+        fields = ('id', 'title', 'content', 'author', 'image', 'tags', 'created_at', 'likes')
         extra_kwargs = {"author": {"read_only":True}}
 
 
 class TagSerializer(serializers.ModelSerializer):
-    posts = serializers.PrimaryKeyRelatedField(many=True, queryset=Post.postobjects.all())  # Agrega este campo
+    posts = serializers.PrimaryKeyRelatedField(many=True, queryset=Post.objects.all())
 
     class Meta:
         model = Tag
-        fields = ('id', 'name', 'slug', 'posts')
+        fields = ('id', 'name', 'posts')
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ('id', 'content', 'author', 'slug', 'image', 'post', 'created_at', 'likes')
+        fields = ('id', 'content', 'author', 'image', 'post', 'created_at', 'likes')
         extra_kwargs = {"author": {"read_only":True}, "post": {"read_only":True}}
 
 class CommentListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ('id', 'content', 'author', 'slug','image', 'post', 'created_at', 'likes')
+        fields = ('id', 'content', 'author','image', 'post', 'created_at', 'likes')
         extra_kwargs = {"author": {"read_only":True}, "post": {"read_only":True}}
 
 class LikePostSerializer(serializers.ModelSerializer):

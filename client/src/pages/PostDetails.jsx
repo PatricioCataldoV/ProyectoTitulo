@@ -21,17 +21,17 @@ function PostDetail({
 }){
 
     const params = useParams()
-    const slug = params.slug
+    const id = params.id
     
     useEffect(()=>{
-        get_post(slug),
-        get_comment_list_post(slug)
+        get_post(id),
+        get_comment_list_post(id)
     },[])
     return( 
         <Layout>
             <Navbar/>
             <div className="pt-4">{
-                post && post.slug === slug ?
+                post ?
                 <div className="pt-24">
                     <div className="bg-gray-800 text-white p-8 rounded-lg shadow-lg">
                         <h1 className="text-2xl font-semibold mb-4">{post.title}</h1>
@@ -44,8 +44,7 @@ function PostDetail({
                             />
                         </div>
                         <div className="mt-4 text-gray-400 text-sm">
-                            {moment(post.published).format('LL')}
-                        </div>
+                            Fecha de Publicación : {moment(post.published).format('DD/MM/YY')}                        </div>
                         <div className="mt-3 flex justify-end">
                             <button
                                 className="form-button rounded-md bg-purple-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600"
@@ -62,7 +61,7 @@ function PostDetail({
             }
             </div>
             <div className="pt-4">
-                <FormComment route="/api/create_comment"/>
+                <FormComment route="/api/create_comment" id={id}/>
             </div>
             <div className="pt-4">
                 <CommentList comments={comments&&comments} get_comment_list_post_page={get_comment_list_post_page} count={count&&count}/>

@@ -4,7 +4,7 @@ import {
 } from "./types";
 import api from "../../api";
 
-export const get_comment_list_post = (slug) => async dispatch => {
+export const get_comment_list_post = (id) => async dispatch => {
     const config = {
         headers: {
             'Accept': 'application/json'
@@ -13,7 +13,7 @@ export const get_comment_list_post = (slug) => async dispatch => {
 
     try{
 
-        const res = await api.get(`api/post/${slug}/comments`, config)
+        const res = await api.get(`api/post/${id}/comments`, config)
 
         if(res.status === 200){
             dispatch({
@@ -32,7 +32,7 @@ export const get_comment_list_post = (slug) => async dispatch => {
         });
     }
 }
-export const get_comment_list_post_page = (slug, page) => async dispatch => {
+export const get_comment_list_post_page = (id, page) => async dispatch => {
     const config = {
         headers: {
             'Accept': 'application/json'
@@ -41,7 +41,7 @@ export const get_comment_list_post_page = (slug, page) => async dispatch => {
 
     try{
 
-        const res = await api.get(`post/?slug=${slug}/comments/&p=${page}`, config)
+        const res = await api.get(`post/?id=${id}/comments/&p=${page}`, config)
 
         if(res.status === 200){
             dispatch({

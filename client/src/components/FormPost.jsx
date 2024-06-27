@@ -2,28 +2,28 @@ import { useState } from "react";
 import api from "../redux/api";
 import { useNavigate } from "react-router-dom";
 
-function FormPost({route}){
+function FormPost({tags}){
     const [title, setTitle] = useState("")
     const [content, setContent] = useState("")
-    //const [tag, setTag] = useState("")
+    const [selectTag, setSelectTag] = useState([])
     const [image, setImage] = useState("")
     const navigate = useNavigate()
 
-    const handleSubmit = async (e) =>{
+    const createPost = (e) => {
         e.preventDefault();
-
-        try{
-            const res = await api.post(route, {title, content, image})
-            navigate("/")
-        }
-        catch(error) {
-            alert(error)
-        } finally {
-            setLoading(false)
-        }
+        api
+            .post("/api/create_post", { title,content, selectTag })
+            .then((res) => {
+                if (res.status === 201){
+                    navigate("/")
+                }
+                else alert("Failed to make post.");
+            })
+            .catch((err) => alert(err));
     };
 
-    return <form onSubmit={handleSubmit} className="form-container">
+
+    return <form onSubmit={createPost} className="form-container">
         <div class="mt-30 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
             <div class="sm:col-span-4">
                 <label for="title" class="block text-sm font-medium leading-6 text-gray-900">Título</label>
@@ -36,12 +36,29 @@ function FormPost({route}){
             <div class="sm:col-span-4">
                 <label for="title" class="block text-sm font-medium leading-6 text-gray-900">Etiquetas</label>
                 <div class="mt-2">
-                    <div class="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md">
-                        <input type="text"id="title" className="form-input" class="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6" placeholder="Añade Etiquetas separandolas por comas" style={{ textIndent: '7px' }}/>
-                    </div>
+                    {tags ? (
+                        tags.map(tag => (
+                        <label key={tag.id}>
+                            <input
+                                type="checkbox"
+                                name={tag.id}
+                                checked={selectTag.includes(tag.id)}
+                                onChange={() => {
+                                    const updatedTags = selectTag.includes(tag.id)
+                                        ? selectTag.filter(id => id !== tag.id)
+                                        : [...selectTag, tag.id];
+                                    setSelectTag(updatedTags);
+                                }}
+                            />
+                            {tag.name}
+                        </label>
+                        ))
+                    ) : (
+                        <p>No se encontraron etiquetas disponibles...</p>
+                    )}
                 </div>
             </div>
-
+            
             <div class="col-span-full">
                 <label for="content" class="block text-sm font-medium leading-6 text-gray-900">Texto Principal</label>
                 <div class="mt-2">
@@ -68,4 +85,5 @@ function FormPost({route}){
         </div>
     </form>
 }
+
 export default FormPost

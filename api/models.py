@@ -46,53 +46,33 @@ class Persona(AbstractBaseUser, PermissionsMixin):
 
 class Tag(models.Model):
     name = models.CharField(max_length = 40)
-    slug = models.SlugField(max_length=40)
 
     def __str__(self):
         return self.name # En caso de llamar al modelo para presentarlo, muestra el nombre por defecto
 
 class Post(models.Model):
 
-    class PostObjects(models.Manager):
-        def get_queryset(self):
-            return super().get_queryset().filter(status='published')
-
-    options = (
-        ('draft', 'Draft'),
-        ('published', 'Published'),
-    )
-
     title = models.CharField(max_length = 255)
-    content = models.CharField(max_length = 1000)
+    content = models.TextField(max_length = 1000)
     author = models.ForeignKey(Persona, on_delete = models.CASCADE, related_name= "Posts")
-    slug = models.SlugField(max_length=100, unique=True)
     tags = models.ManyToManyField(Tag, blank=True)
-    status = models.CharField(max_length=10, choices=options, default="draft")
     created_at = models.DateTimeField(auto_now_add = True)
-    image= models.ImageField(verbose_name="Imagen", upload_to="imgsP", blank=True)
+    image= models.FileField(verbose_name="Imagen", upload_to="imgsP", blank=True)
     likes = models.IntegerField(default=0)
-
-    postobjects = PostObjects()
 
     class Meta:
         ordering = ('-created_at',)
 
     def __str__(self):
         return self.title # En caso de llamar al modelo para presentarlo, muestra el titulo por defecto
-    
-    
-    def get_status(self):
-        status = self.status
-        return status
 
 class Comment(models.Model):
-    content = models.CharField(max_length = 255)
+    content = models.TextField(max_length = 255)
     author = models.ForeignKey(Persona, on_delete = models.CASCADE, related_name= "comentarios")
     post = models.ForeignKey(Post, on_delete = models.CASCADE)
     created_at = models.DateTimeField(auto_now_add = True)
-    slug = models.SlugField(max_length=100, unique=True)
     likes = models.IntegerField(default=0, blank=True)
-    image= models.ImageField(verbose_name="Imagen", upload_to="imgsC", blank=True)
+    image= models.FileField(verbose_name="Imagen", upload_to="imgsC", blank=True)
 
     
     class Meta:

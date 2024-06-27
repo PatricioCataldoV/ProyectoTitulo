@@ -36,7 +36,7 @@ function Rutas(){
               }
             />
             <Route
-              path="/post/:slug"
+              path="/post/:id"
               element={
                 <PrivateRoute>
                   <PostDetails/>

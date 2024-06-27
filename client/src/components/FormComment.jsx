@@ -1,32 +1,32 @@
 import { useState } from "react";
 import api from "../redux/api";
 
-function FormComment({route}){
+
+function FormComment({route , id}){
     const [content, setContent] = useState("")
     const [image, setImage] = useState("")
+    const [post_id, setPostId] = useState(id)
 
 
-    const handleSubmit = async (e) =>{
-        setLoading(true);
+    const createComment = (e) => {
         e.preventDefault();
-
-        try{
-            const res = await api.post(route, {content, image})
-            navigate("/")
-        }
-        catch(error) {
-            alert(error)
-        } finally {
-            setLoading(false)
-        }
+        api
+            .post("/api/create_comment", { content, post_id })
+            .then((res) => {
+                if (res.status === 201){
+                    window.location.reload();
+                }
+                else alert("Failed to make post.");
+            })
+            .catch((err) => alert(err));
     };
 
     return <div className="bg-gray-800 text-white p-8 rounded-lg shadow-lg">
-                <form onSubmit={handleSubmit} className="form-container">
+                <form onSubmit={createComment} className="form-container">
                     <div className="mt-2 ml-7">
                         <input
                             type="text"
-                            id="title"
+                            id="content"
                             className="form-input rounded-md bg-gray-700 text-white px-2 py-1"
                             value={content}
                             onChange={(e) => setContent(e.target.value)}

@@ -1,30 +1,34 @@
 from django.shortcuts import render, get_object_or_404
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .pagination import SmallSetPagination
-from .permissions import IsPostAuthorOrReadOnly
+from .permissions import IsAuthorOrReadOnly
 from django.db.models.query_utils import Q
-from .serializers import PersonaSerializer, PostSerializer, PostListSerializer,CommentListSerializer
+from .serializers import PersonaSerializer, PostSerializer, PostListSerializer,CommentListSerializer, CommentSerializer
 from .models import Persona, Post, Comment, Tag, LikeComments, LikePosts
 
 # Create your views here.
 
-class CreatePostView(APIView):
+class CreatePostView(generics.CreateAPIView):
+    serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
-    def post(self, request, format=None):
-        user = self.request.user
-        Post.postobjects.create(author=user)
 
-        return Response({'success': 'Post created'})
+    def perform_create(self, serializer):
+        tags = self.request.data.get('selectTag')
+        if serializer.is_valid():
+            post = serializer.save(author=self.request.user)
+            post.tags.add(*tags) 
+        else:
+            print(serializer.errors)
 
 class PostListView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, format=None):
-        if Post.postobjects.all().exists():
+        if Post.objects.all().exists():
 
-            posts = Post.postobjects.all()
+            posts = Post.objects.all()
 
             paginator = SmallSetPagination()
             results = paginator.paginate_queryset(posts, request)
@@ -46,7 +50,6 @@ class ListTagView(APIView):
 
                 item['id']=tag.id
                 item['name']=tag.name
-                item['slug']=tag.slug
 
                 result.append(item)
 
@@ -56,10 +59,10 @@ class ListTagView(APIView):
 
 class ListPostsByTagView(APIView):
     permission_classes = [IsAuthenticated]
-    def get(self, request, slug, format=None):
-        tag = Tag.objects.get(slug=slug)
+    def get(self, request, id, format=None):
+        tag = Tag.objects.get(id=id)
         if tag:
-            posts = Post.postobjects.filter(tags=tag).all()
+            posts = Post.objects.filter(tags=tag).all()
             if posts:
                 posts = posts.order_by('-created_at').all()   
                 paginator = SmallSetPagination()
@@ -83,10 +86,10 @@ class ProfileView(APIView):
         
 class PostDetailView(APIView):
     permission_classes = [IsAuthenticated]
-    def get(self, request, slug, format=None):
-        if Post.postobjects.filter(slug=slug).exists():
+    def get(self, request, id, format=None):
+        if Post.objects.filter(id=id).exists():
             
-            post = Post.postobjects.get(slug=slug)
+            post = Post.objects.get(id=id)
             serializer = PostSerializer(post)
 
             return Response({'post':serializer.data})
@@ -94,10 +97,10 @@ class PostDetailView(APIView):
             return Response({'error':'Post doesnt exist'}, status=status.HTTP_404_NOT_FOUND)
 
 class DeletePostView(APIView):
-    permission_classes = (IsPostAuthorOrReadOnly,)
-    def delete(self, request, slug, format=None):
+    permission_classes = (IsAuthorOrReadOnly,)
+    def delete(self, request, id, format=None):
         
-        post = Post.objects.get(slug=slug)
+        post = Post.objects.get(id=id)
 
         post.delete()
 
@@ -107,7 +110,7 @@ class SearchPostView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self,request, format=None):
         search_term = request.query_params.get('s')
-        matches = Post.postobjects.filter(
+        matches = Post.objects.filter(
             Q(title__icontains=search_term) |
             Q(content__icontains=search_term)
         )
@@ -137,38 +140,12 @@ class AuthorListView(APIView):
             return Response({'error':'No posts found'}, status=status.HTTP_404_NOT_FOUND)
         
 
-class DraftPostView(APIView):
-    permission_classes = (IsPostAuthorOrReadOnly,)
-    def put(self, request, format=None):
-        data = self.request.data
-        slug = data['slug']
-
-        post = Post.objects.get(slug=slug)
-
-        post.status = 'draft'
-        post.save()
-
-        return Response({'success': 'Post edited'})
-
-
-class PublishPostView(APIView):
-    permission_classes = (IsPostAuthorOrReadOnly,)
-    def put(self, request, format=None):
-        data = self.request.data
-        slug = data['slug']
-
-        post = Post.objects.get(slug=slug)
-
-        post.status = 'published'
-        post.save()
-
-        return Response({'success': 'Post edited'})
 
 class ListCommentsByPostView(APIView):
     permission_classes = [IsAuthenticated]
-    def get(self, request, slug, format=None):
+    def get(self, request, id, format=None):
         if Comment.objects.all().exists():
-            post = Post.postobjects.get(slug=slug)
+            post = Post.objects.get(id=id)
             comments = Comment.objects.order_by('-created_at').all()
             comments = comments.filter(post=post)      
             paginator = SmallSetPagination()
@@ -179,19 +156,22 @@ class ListCommentsByPostView(APIView):
         else:
             return Response({'error':'No comments found'}, status=status.HTTP_404_NOT_FOUND)
 
-class CreateCommentView(APIView):
+class CreateCommentView(generics.CreateAPIView):
+    serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
-    def post(self, request, format=None):
-        user = self.request.user
-        Comment.objects.create(author=user)
 
-        return Response({'success': 'Comment published'})
+    def perform_create(self, serializer):
+        post_id = self.request.data.get('post_id')
+        if serializer.is_valid():
+            serializer.save(author=self.request.user, post_id=post_id)
+        else:
+            print(serializer.errors)
     
 class DeleteCommentView(APIView):
-    permission_classes = (IsPostAuthorOrReadOnly,)
-    def delete(self, request, slug, format=None):
+    permission_classes = (IsAuthorOrReadOnly,)
+    def delete(self, request, id, format=None):
         
-        comment = Comment.objects.get(slug=slug)
+        comment = Comment.objects.get(id=id)
 
         comment.delete()
 
@@ -205,10 +185,10 @@ class CreatePersonaView(generics.CreateAPIView):
         
 class LikePostCreateView(APIView):
     permission_classes = [IsAuthenticated]
-    def post(self, request, slug, format=None):
-        if Post.objects.filter(slug=slug).exists():
+    def post(self, request, id, format=None):
+        if Post.objects.filter(id=id).exists():
             user = self.request.user
-            post = Post.objects.get(slug=slug)
+            post = Post.objects.get(id=id)
             like, created = LikePosts.objects.get_or_create(author=user, post=post)
             if created:
                 post.likes += 1
@@ -224,9 +204,9 @@ class LikePostCreateView(APIView):
         
 class LikeCommentCreateView(APIView):
     permission_classes = [IsAuthenticated]
-    def post(self, request, slug, format=None):
-        if Post.objects.filter(slug=slug).exists():
-            comment = Comment.objects.get(slug=slug)
+    def post(self, request, id_post,id_comment, format=None):
+        if Post.objects.filter(id=id_post).exists():
+            comment = Comment.objects.get(id=id_comment)
             user = self.request.user
             like, created = LikeComments.objects.get_or_create(author=user, comment=comment)
             if created:
@@ -234,7 +214,7 @@ class LikeCommentCreateView(APIView):
                 comment.save()
                 return Response({'success': 'Like created'})
             else:
-                like.delete()  # Elimina el "me gusta" existente
+                like.delete()
                 comment.likes -= 1
                 comment.save()
                 return Response({'success': 'Like removed'})

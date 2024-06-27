@@ -25,17 +25,17 @@ function Profile({
                         <div className="sm:col-span-1">
                             <img className="h-50 w-50 rounded-full" src={profile.image} alt="Foto de perfil" />
                         </div>
-                        <div className="sm:col-span-1">
+                        <div className="font-serif place-contend-center sm:col-span-1">
                             <h1 className="text-2xl font-semibold text-gray-800">Nombre Completo:</h1>
-                            <p className="text-lg text-gray-600 mt-3">{profile.username}</p>
+                            <p className="text-xl text-gray-600 mt-3">{profile.username}</p>
                             <h1 className="text-2xl font-semibold text-gray-800 mt-3">RUT:</h1>
-                            <p className="text-lg text-gray-600 mt-3">{profile.rut}</p>
+                            <p className="text-xl text-gray-600 mt-3">{profile.rut}</p>
                             <h1 className="text-2xl font-semibold text-gray-800 mt-3">Correo Electrónico:</h1>
-                            <p className="text-lg text-gray-600 mt-3">{profile.email}</p>
+                            <p className="text-xl text-gray-600 mt-3">{profile.email}</p>
                             <h1 className="text-2xl font-semibold text-gray-800 mt-3">Nivel:</h1>
-                            <p className="text-lg text-gray-600 mt-3">{profile.level}</p>
+                            <p className="font-serif text-xl text-gray-600 mt-3">{profile.level}</p>
                             <h1 className="text-2xl font-semibold text-gray-800 mt-3">Experiencia:</h1>
-                            <p className="text-lg text-gray-600 mt-3">{profile.exp}/100</p>
+                            <p className="text-xl text-gray-600 mt-3">{profile.exp}/100</p>
                         </div>
                     </div>
                 </div>

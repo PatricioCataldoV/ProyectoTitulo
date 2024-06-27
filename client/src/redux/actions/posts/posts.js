@@ -128,7 +128,7 @@ export const get_post_list_page = (page) => async dispatch => {
     }
 }
 
-export const get_post_list_tag = (slug) => async dispatch => {
+export const get_post_list_tag = (id) => async dispatch => {
     const config = {
         headers: {
             'Accept': 'application/json'
@@ -137,7 +137,7 @@ export const get_post_list_tag = (slug) => async dispatch => {
 
     try{
 
-        const res = await api.get(`/api/posts/by_tag/?slug=${slug}`, config)
+        const res = await api.get(`/api/posts/by_tag/?id=${id}`, config)
 
         if(res.status === 200){
             dispatch({
@@ -157,7 +157,7 @@ export const get_post_list_tag = (slug) => async dispatch => {
     }
 }
 
-export const get_post_list_tag_page = (slug, page) => async dispatch => {
+export const get_post_list_tag_page = (id, page) => async dispatch => {
     const config = {
         headers: {
             'Accept': 'application/json'
@@ -166,7 +166,7 @@ export const get_post_list_tag_page = (slug, page) => async dispatch => {
 
     try{
 
-        const res = await api.get(`/api/posts/by_tag/?slug=${slug}&p=${page}`, config)
+        const res = await api.get(`/api/posts/by_tag/?id=${id}&p=${page}`, config)
 
         if(res.status === 200){
             dispatch({
@@ -186,7 +186,7 @@ export const get_post_list_tag_page = (slug, page) => async dispatch => {
     }
 }
 
-export const get_post = (slug) => async dispatch => {
+export const get_post = (id) => async dispatch => {
     const config = {
         headers: {
             'Accept': 'application/json'
@@ -194,7 +194,7 @@ export const get_post = (slug) => async dispatch => {
     };
 
     try {
-        const res = await api.get(`/api/post/${slug}`, config);
+        const res = await api.get(`/api/post/${id}`, config);
 
         if (res.status === 200) {
             dispatch({

@@ -8,7 +8,7 @@ function PostCard({data,index}){
     return(
       <li className="mb-8">
         <Link
-          to={`/post/${data.slug}`}
+          to={`/post/${data.id}`}
           onMouseEnter={() => {
             const title = document.getElementById(`title${data.id}`);
             title.classList.add('text-purple-500');
