@@ -36,9 +36,9 @@ function FormPost({tags}){
             <div class="sm:col-span-4">
                 <label for="title" class="block text-sm font-medium leading-6 text-gray-900">Etiquetas</label>
                 <div class="mt-2">
-                    {tags ? (
-                        tags.map(tag => (
-                        <label key={tag.id}>
+                {tags ? (
+                    tags.map(tag => (
+                        <label key={tag.id} className="inline-flex items-center ml-3">
                             <input
                                 type="checkbox"
                                 name={tag.id}
@@ -49,13 +49,14 @@ function FormPost({tags}){
                                         : [...selectTag, tag.id];
                                     setSelectTag(updatedTags);
                                 }}
+                                className="form-checkbox h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                             />
-                            {tag.name}
+                            <span className="ml-2 text-gray-700">{tag.name}</span>
                         </label>
-                        ))
-                    ) : (
-                        <p>No se encontraron etiquetas disponibles...</p>
-                    )}
+                    ))
+                ) : (
+                    <p>No se encontraron etiquetas disponibles...</p>
+                )}
                 </div>
             </div>
             

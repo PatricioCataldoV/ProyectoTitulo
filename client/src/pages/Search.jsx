@@ -1,10 +1,7 @@
 import { connect } from "react-redux"
 import Layout from "../components/navigation/Layout"
 import Navbar from "../components/navigation/Navbar"
-import tags from "../redux/reducers/tags"
 import { useEffect } from "react"
-import { get_tags } from "../redux/actions/tags/tags"
-import posts from "../redux/reducers/posts"
 import {
     get_post_list,
     get_post_list_page,
@@ -43,7 +40,8 @@ function Search({
             <div className="pt-24">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="mx-auto max-w-6xl my-10">
-                        <PostList posts={posts&&posts} get_blog_list_page={search_post_page} term={term} count={count&&count}/>
+                        <div className="ml-4 mb-4 p-4 border rounded-lg shadow-md text-xl font-extrabold leading-none tracking-tight text-gray-900 inline-block">Buscando por: {term}</div>
+                        <PostList posts={posts&&posts} get_post_list_page={search_post_page} term={term} count={count&&count}/>
                     </div>
                 </div>
             </div>

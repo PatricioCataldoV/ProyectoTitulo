@@ -12,7 +12,7 @@ function Navbar(){
     };
     const onSubmit = (e) => {
         e.preventDefault();
-        setTimeout(() => navigate("/s=" + term), 0.2);
+        setTimeout(() => navigate(`/s/${term}`), 200);
         setTerm("");
     };
 
@@ -38,13 +38,14 @@ function Navbar(){
                                 onChange={(e)=>handleChange(e)}
                                 type='search'
                                 className={`
-                                    py-2.5 pl-10 pr-3 
+                                    py-2 pl-4 pr-3 
                                     block w-full rounded-md
                                     border border-gray-200
                                     focus:border-gray-200 focus:ring-gray-200
                                     focus:outline-none focus:ring-1
                                     placeholder-gray-600 focus:placeholder-gray-500
                                 `}
+                                placeholder="Buscar"
                             />
                             
                         </form>

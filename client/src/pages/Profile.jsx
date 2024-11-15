@@ -3,6 +3,7 @@ import Layout from "../components/navigation/Layout"
 import Navbar from "../components/navigation/Navbar"
 import { useEffect } from "react"
 import { get_profile } from "../redux/actions/profile/profile"
+import { Link } from 'react-router-dom';
 
 
 function Profile({
@@ -44,9 +45,11 @@ function Profile({
                 )}
                 {profile && (
                     <div className="flex justify-end mt-3">
-                        <button className="form-button bg-blue-500 hover:bg-blue-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 mr-7 rounded">
-                            Historial de Publicaciones
-                        </button>
+                        <Link to="/profile/posts">
+                            <button className="form-button bg-blue-500 hover:bg-blue-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 mr-7 rounded">
+                                Historial de Publicaciones
+                            </button>
+                        </Link>
                     </div>
                 )}
             </div>

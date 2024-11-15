@@ -13,8 +13,8 @@ urlpatterns = [
     path("post/<int:id>/delete", views.DeletePostView.as_view(), name="delete-post"),
     path("post/<int:id>/comments", views.ListCommentsByPostView.as_view(), name="comment-list"),
     path("create_comment", views.CreateCommentView.as_view(), name="create-comment"),
-    path("comment/<int:id_comment>/delete", views.DeleteCommentView.as_view(), name="delete-comment"),
+    path("comment/<int:id>/delete", views.DeleteCommentView.as_view(), name="delete-comment"),
     path("tag_list", views.ListTagView.as_view(), name="tag-list"),
-    path("comment/<int:id_comment>/like_comment", views.LikeCommentCreateView.as_view(), name="like-comment"),
+    path("comment/<int:id>/like_comment", views.LikeCommentCreateView.as_view(), name="like-comment"),
     path("post/<int:id>/like_post", views.LikePostCreateView.as_view(), name="like-post"),
 ]

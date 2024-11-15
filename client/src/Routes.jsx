@@ -8,7 +8,7 @@ import Search from './pages/Search'
 import PostDetails from './pages/PostDetails'
 import PostByTag from './pages/PostByTag'
 import CreatePost from './pages/CreatePost'
-import PostList from './pages/PostList'
+import UserPostList from './pages/UserPostList'
 import Profile from './pages/Profile'
 
 function Logout(){
@@ -44,7 +44,7 @@ function Rutas(){
               }
             />
             <Route
-              path="/s=:term"
+              path="/s/:term"
               element={
                   <Search/>
               }
@@ -69,12 +69,12 @@ function Rutas(){
               path="/profile/posts"
               element={
                 <PrivateRoute>
-                  <PostList/>
+                  <UserPostList/>
                 </PrivateRoute>
               }
             />
             <Route
-              path="/posts/by_tag/:slug"
+              path="/posts/by_tag/:id"
               element={
                 <PrivateRoute>
                   <PostByTag/>

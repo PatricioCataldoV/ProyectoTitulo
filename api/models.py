@@ -28,7 +28,6 @@ class Persona(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateField(auto_now_add=True)
     exp = models.PositiveIntegerField(default=0, validators=[MaxValueValidator(100)])
     level = models.PositiveIntegerField(default = 1)
-    image= models.ImageField(verbose_name="Imagen", upload_to="imgsProfile", default="profile_default.jpg")
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)

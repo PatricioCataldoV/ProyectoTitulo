@@ -137,7 +137,7 @@ export const get_post_list_tag = (id) => async dispatch => {
 
     try{
 
-        const res = await api.get(`/api/posts/by_tag/?id=${id}`, config)
+        const res = await api.get(`/api/posts/by_tag/${id}`, config)
 
         if(res.status === 200){
             dispatch({
@@ -222,7 +222,7 @@ export const search_post = (search_term) => async dispatch => {
     };
 
     try {
-        const res = await api.get(`/api/post/search?s=${search_term}`, config);
+        const res = await api.get(`/api/search?s=${search_term}`, config);
 
         if (res.status === 200) {
             dispatch({

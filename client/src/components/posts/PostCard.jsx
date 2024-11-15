@@ -29,18 +29,17 @@ function PostCard({data,index}){
                   {data.title.length > 80 ? data.title.slice(0, 79) : data.title}
                 </p>
                 <div>
-                  <span className="hover:text-orange-500 mx-1 font-medium text-gray-800 text-sm">
-                    {data.tags.name}
-                  </span>
-                  <span className="text-gray-300">&middot;</span>
-                  <p className="mt-2 text-gray-600 leading-7">
+                  <p className="mt-2 text-gray-900 leading-7">
                     {data.content.length > 150
                       ? data.content.slice(0, 149)
                       : data.content}
                   </p>
                 </div>
-                <span className="mt-2 ml-1 font-medium text-gray-800 text-sm">
-                  {moment(data.published).format('DD/MM/YY')}
+                <div className="mt-3 ml-1 font-medium text-gray-700 text-m">
+                  Puntuación: {data.likes}
+                </div>
+                <span className="mt-3 ml-1 font-medium text-gray-500 text-sm">
+                  Fecha de publicación: {moment(data.published).format('DD/MM/YY')}
                 </span>
               </div>
             </div>

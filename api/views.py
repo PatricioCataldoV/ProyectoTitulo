@@ -192,31 +192,39 @@ class LikePostCreateView(APIView):
             like, created = LikePosts.objects.get_or_create(author=user, post=post)
             if created:
                 post.likes += 1
+                post.author.exp += 1
                 post.save()
+                post.author.save()
                 return Response({'success': 'Like created'})
             else:
                 like.delete()
                 post.likes -= 1
+                post.author.exp -=1
                 post.save()
+                post.author.save()
                 return Response({'success': 'Like removed'})
         else:
             return Response({'error':'Post doesnt exist'}, status=status.HTTP_404_NOT_FOUND)
         
 class LikeCommentCreateView(APIView):
     permission_classes = [IsAuthenticated]
-    def post(self, request, id_post,id_comment, format=None):
-        if Post.objects.filter(id=id_post).exists():
-            comment = Comment.objects.get(id=id_comment)
+    def post(self, request,id, format=None):
+        if Comment.objects.filter(id=id).exists():
+            comment = Comment.objects.get(id=id)
             user = self.request.user
             like, created = LikeComments.objects.get_or_create(author=user, comment=comment)
             if created:
                 comment.likes += 1
+                comment.author.exp += 1
                 comment.save()
+                comment.author.save()
                 return Response({'success': 'Like created'})
             else:
                 like.delete()
                 comment.likes -= 1
+                comment.author.exp -= 1
                 comment.save()
+                comment.author.save()
                 return Response({'success': 'Like removed'})
         else:
             return Response({'error': 'Comment does not exist'}, status=status.HTTP_404_NOT_FOUND)
